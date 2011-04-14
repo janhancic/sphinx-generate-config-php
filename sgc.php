@@ -1,6 +1,9 @@
 #!/usr/local/bin/php
 <?php
 
+// TODO: try to come up with better names for all this variables ... this is really a mess right now
+
+// TODO: read this from command line arguments
 Include ( 'sphinxconfig.php' );
 
 $commonDefaults = Array (
@@ -12,7 +15,7 @@ $commonDefaults = Array (
 	'min_infix_len' => 0
 );
 
-$sourceDefaultConfig = Array (
+$hostCommonSourceDefaultConfig = Array (
 	'type' => 'mysql',
 	'sql_host' => 'localhost',
 	'sql_query_pre' => 'SET NAMES utf8;'
@@ -20,6 +23,7 @@ $sourceDefaultConfig = Array (
 
 $common = Array_Merge ( $commonDefaults, $common );
 
+// TODO: make this name configurable
 $output = "index common_index\n{\n";
 
 foreach ( $common as $commonKey => $commonValue )
@@ -27,27 +31,53 @@ foreach ( $common as $commonKey => $commonValue )
 
 $output .= "}\n\n";
 
-foreach ( $projects as $projectKey => $projectValue )
+foreach ( $projects as $projectName => $projectSettings )
 {
-	$output .= "# start definitions for project '" . $projectKey . "'\n";
+	$output .= "# start definitions for project '" . $projectName . "'\n";
 
-	foreach ( $projectValue['hosts'] as $hostKey => $hostValue )
+	foreach ( $projectSettings['hosts'] as $hostName => $hostSettings )
 	{
-		$output .= "# start $hostKey\n";
-		$output .= "source " . $hostValue['prefix'] . "common\n{\n";
+		$output .= "# start $hostName\n";
+		$output .= "source " . $hostSettings['prefix'] . "common\n{\n";
 
-		$hostCommonSourceConfig = Array_Merge ( $sourceDefaultConfig, $hostValue['source'] );
-		foreach ( $hostCommonSourceConfig as $hostCommonSourceConfigKey => $hostCommonSourceValue )
-			$output .= "\t" . $hostCommonSourceConfigKey . " = " . $hostCommonSourceValue . "\n";
+		$hostCommonSource = Array_Merge ( $hostCommonSourceDefaultConfig, $hostSettings['source'] );
+		foreach ( $hostCommonSource as $hostCommonSourceKey => $hostCommonSourceValue )
+			$output .= "\t" . $hostCommonSourceKey . " = " . $hostCommonSourceValue . "\n";
 
 		$output .= "}\n\n";
 
-		$output .= "# end $hostKey\n";
+		foreach ( $hostSettings['sources'] as $hostSettingsSourceKey => $hostSettingsSourceValue )
+		{
+			$output .= "source " . $hostSettings['prefix'] . $hostSettingsSourceKey . " : " . $hostSettings['prefix'] . "common\n{\n";
+			foreach ( $projectSettings['sources'][$hostSettingsSourceKey] as $hostSourceKey => $hostSourceValue )
+			{
+				if ( $hostSourceKey === 'sql_attr_uint' )
+				{
+					foreach ( $hostSourceValue as $hostSourceAttrValue )
+						$output .= "\tsql_attr_uint = " . $hostSourceAttrValue . "\n";
+				}
+				else
+					$output .= "\t" . $hostSourceKey . " = " . $hostSourceValue . "\n";
+			}
+
+			$output .= "}\n\n";
+
+			$output .= "index " . $hostSettings['prefix'] . $hostSettingsSourceKey . " : common_index\n{\n";
+			$output .= "\tsource = " . $hostSettings['prefix'] . $hostSettingsSourceKey . "\n";
+			
+			foreach ( $hostSettingsSourceValue as $hostSettingsSourceValueKey => $hostSettingsSourceValueValue )
+				$output .= "\t" . $hostSettingsSourceValueKey . " = " . $hostSettingsSourceValueValue . "\n";
+
+			$output .= "}\n\n";
+		}
+
+		$output .= "# end $hostName\n";
 	}
 
-	$output .= "# end definitions for project '" . $projectKey . "'\n";
+	$output .= "# end definitions for project '" . $projectName . "'\n";
 }
 
+// TODO: make this configurable
 //File_Put_Contents ( 'sphinx.conf', $output );
 echo $output;
 

@@ -3,8 +3,11 @@
 
 // TODO: try to come up with better names for all this variables ... this is really a mess right now
 
-// TODO: read this from command line arguments
-Include ( 'sphinxconfig.php' );
+$sphinxConfigFile = 'sphinxconfig.php';
+if ( IsSet ( $argv[1] ) === true )
+	$sphinxConfigFile = $argv[1];
+
+Include ( $sphinxConfigFile );
 
 $commonDefaults = Array (
 	'charset_type' => 'utf-8',
@@ -27,7 +30,7 @@ $common = Array_Merge ( $commonDefaults, $common );
 $output = "index common_index\n{\n";
 
 foreach ( $common as $commonKey => $commonValue )
-	$output .= "\t" . $commonKey . " = '" . $commonValue . "'\n";
+	$output .= "\t" . $commonKey . " = " . $commonValue . "\n";
 
 $output .= "}\n\n";
 
@@ -51,10 +54,10 @@ foreach ( $projects as $projectName => $projectSettings )
 			$output .= "source " . $hostSettings['prefix'] . $hostSettingsSourceKey . " : " . $hostSettings['prefix'] . "common\n{\n";
 			foreach ( $projectSettings['sources'][$hostSettingsSourceKey] as $hostSourceKey => $hostSourceValue )
 			{
-				if ( $hostSourceKey === 'sql_attr_uint' )
+				if ( Is_Array ( $hostSourceValue ) === true )
 				{
 					foreach ( $hostSourceValue as $hostSourceAttrValue )
-						$output .= "\tsql_attr_uint = " . $hostSourceAttrValue . "\n";
+						$output .= "\t" . $hostSourceKey . " = " . $hostSourceAttrValue . "\n";
 				}
 				else
 					$output .= "\t" . $hostSourceKey . " = " . $hostSourceValue . "\n";
@@ -64,7 +67,7 @@ foreach ( $projects as $projectName => $projectSettings )
 
 			$output .= "index " . $hostSettings['prefix'] . $hostSettingsSourceKey . " : common_index\n{\n";
 			$output .= "\tsource = " . $hostSettings['prefix'] . $hostSettingsSourceKey . "\n";
-			
+
 			foreach ( $hostSettingsSourceValue as $hostSettingsSourceValueKey => $hostSettingsSourceValueValue )
 				$output .= "\t" . $hostSettingsSourceValueKey . " = " . $hostSettingsSourceValueValue . "\n";
 
@@ -77,8 +80,16 @@ foreach ( $projects as $projectName => $projectSettings )
 	$output .= "# end definitions for project '" . $projectName . "'\n";
 }
 
-// TODO: make this configurable
-//File_Put_Contents ( 'sphinx.conf', $output );
-echo $output;
+$output .= "\nsearchd\n{\n";
+
+foreach ( $searchd as $searchdKey => $searchdValue )
+	$output .= "\t" . $searchdKey . " = " . $searchdValue . "\n";
+
+$output .= "}";
+
+if ( IsSet ( $generatedSphinxConfFileName ) === true )
+	File_Put_Contents ( $generatedSphinxConfFileName, $output );
+else
+	File_Put_Contents ( 'sphinx.conf', $output );
 
 ?>

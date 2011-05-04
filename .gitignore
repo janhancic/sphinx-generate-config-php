@@ -1,1 +1,5 @@
+# ignore "my" config file
 config.php
+
+# ignore generated config files
+sphinx.conf

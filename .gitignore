@@ -3,3 +3,4 @@ config.php
 
 # ignore generated config files
 sphinx.conf
+sphinx.gen.conf

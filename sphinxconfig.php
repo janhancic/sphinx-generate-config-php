@@ -11,6 +11,7 @@ $searchd = Array (
 	'port' => 3312,
 	'log' => '/usr/local/sphinx/sphinx.log',
 	'pid_file' => '/usr/local/sphinx/sphinx.pid'
+	'compat_sphinxql_magics', => '0'
 );
 
 $projects = Array ();

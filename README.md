@@ -1,10 +1,11 @@
 # Sphinx Generate Config PHP (sgc.php)
 
 ## What is it?
-A CLI PHP script for generating [Sphinx](http://www.sphinxsearch.com/ "Sphinx search") config files. Developed at [Popcom d.o.o.](http://www.popcom.si/ "Popcom d.o.o. - spletni mediji") where we need a more efficient way of writing Sphinx config files. (more description to come)
+A CLI PHP script for generating [Sphinx](http://www.sphinxsearch.com/ "Sphinx search") config files. Developed at [Popcom d.o.o.](http://www.popcom.si/ "Popcom d.o.o. - spletni mediji") where we need a more efficient way of writing Sphinx config files.
+We have a lot of websites that are localized versions of the same website, and so have the same code base, but use different databases (with the same structure). Writing Sphinx config files for all this version soon became tedious and error prone. So I wrote this little tools, where you define indexes and then it generates config files for all websites.
 
 ## How to use it?
-Don't use it yet, it's still under development.
+Look at "sphinxconfig.php" for an example config file where you define your indexes&sources and define hosts (web pages) that use those sources&indexes. Then run php sgc.php configname.php
 
 ## License
-No license so far, but once it is completed it will be released under a license that allows you to do whatever you want with it.
+Do whatever you want with this.
